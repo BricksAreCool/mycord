@@ -101,18 +101,7 @@ jobs:
                   COMMIT_SHA=$(git rev-parse --short HEAD)
 
                   git config --global user.name "GitHub-Actions"
-                  git config --global user.email actions@github.com
-
-                  mkdir equibuilds && cd equibuilds
-                  git init -b "$BRANCH"
-                  git remote add origin https://$USERNAME:$GITHUB_TOKEN@github.com/$REPO.git
-
-                  if git ls-remote --exit-code --heads origin "$BRANCH" > /dev/null 2>&1; then
-                      git fetch --depth 1 origin "$BRANCH"
-                      git checkout "$BRANCH"
-                  else
-                      git checkout --orphan "$BRANCH"
-                  fi
+                  git config --global user.email actions@github.co
 
                   cp -r ../dist/* .
                   find . -size 0 -delete
