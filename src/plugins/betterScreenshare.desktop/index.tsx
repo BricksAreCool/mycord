@@ -14,37 +14,53 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 import { PluginInfo } from "@plugins/betterScreenshare.desktop/constants";
 import { openScreenshareModal } from "@plugins/betterScreenshare.desktop/modals";
-import { ScreenshareAudioPatcher, ScreensharePatcher } from "@plugins/betterScreenshare.desktop/patchers";
-import { GoLivePanelWrapper, replacedSubmitFunction } from "@plugins/betterScreenshare.desktop/patches";
-import { initScreenshareAudioStore, initScreenshareStore } from "@plugins/betterScreenshare.desktop/stores";
-import { addSettingsPanelButton, Emitter, removeSettingsPanelButton, ScreenshareSettingsIcon } from "@plugins/philsPluginLibrary";
+import {
+    ScreenshareAudioPatcher,
+    ScreensharePatcher,
+} from "@plugins/betterScreenshare.desktop/patchers";
+import {
+    GoLivePanelWrapper,
+    replacedSubmitFunction,
+} from "@plugins/betterScreenshare.desktop/patches";
+import {
+    initScreenshareAudioStore,
+    initScreenshareStore,
+} from "@plugins/betterScreenshare.desktop/stores";
+import {
+    addSettingsPanelButton,
+    Emitter,
+    removeSettingsPanelButton,
+    ScreenshareSettingsIcon,
+} from "@plugins/philsPluginLibrary";
 import { Devs } from "@utils/constants";
 import definePlugin from "@utils/types";
 
 export default definePlugin({
     name: "BetterScreenshare",
-    description: "This plugin allows you to further customize your screenshare.",
-    authors: [Devs.viciouscal],
+    description:
+        "This plugin allows you to further customize your screenshare.",
+    authors: [Devs.Sans],
     dependencies: ["PhilsPluginLibrary"],
     patches: [
         {
             find: ':"go-live-modal"',
             replacement: {
                 match: /function (\i)\((.{1,20})\)\{.{0,300}null==.{0,50}\?(\(0,.{1,10}\.jsxs?\)\(.{1,50}\..{1,10},{).{0,500}channel:.{0,20}}}\)/,
-                replace: "$self.GoLivePanelWrapper($1,$2,$3)"
-            }
+                replace: "$self.GoLivePanelWrapper($1,$2,$3)",
+            },
         },
         {
             find: ".STREAM_FPS_OPTION.",
             replacement: {
                 match: /,onSubmit:function\(\){/,
-                replace: ",onSubmit:function(){$self.replacedSubmitFunction(arguments[0]);"
-            }
-        }
+                replace:
+                    ",onSubmit:function(){$self.replacedSubmitFunction(arguments[0]);",
+            },
+        },
     ],
     start(): void {
         initScreenshareStore();
@@ -57,7 +73,7 @@ export default definePlugin({
             name: PluginInfo.PLUGIN_NAME,
             icon: ScreenshareSettingsIcon,
             tooltipText: "Screenshare Settings",
-            onClick: openScreenshareModal
+            onClick: openScreenshareModal,
         });
     },
     stop(): void {
@@ -69,8 +85,8 @@ export default definePlugin({
         removeSettingsPanelButton(PluginInfo.PLUGIN_NAME);
     },
     toolboxActions: {
-        "Open Screenshare Settings": openScreenshareModal
+        "Open Screenshare Settings": openScreenshareModal,
     },
     GoLivePanelWrapper,
-    replacedSubmitFunction
+    replacedSubmitFunction,
 });

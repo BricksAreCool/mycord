@@ -6,13 +6,17 @@
 
 import { definePluginSettings } from "@api/Settings";
 import { openPluginModal } from "@components/settings";
+import {
+    addSettingsPanelButton,
+    DeafenIcon,
+    removeSettingsPanelButton,
+} from "@plugins/philsPluginLibrary";
 import { Devs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
 import { ContextMenuApi, FluxDispatcher, Menu } from "@webpack/common";
 import type { MouseEvent } from "react";
-import plugins from "~plugins";
 
-import { addSettingsPanelButton, DeafenIcon, removeSettingsPanelButton } from "@plugins/philsPluginLibrary";
+import plugins from "~plugins";
 
 export let fakeD = false;
 
@@ -38,10 +42,10 @@ const settings = definePluginSettings({
                     icon: DeafenIcon,
                     tooltipText: "Fake Deafen",
                     onClick: toggleFakeDeafen,
-                    onContextMenu: onFakeDeafenPanelContextMenu
+                    onContextMenu: onFakeDeafenPanelContextMenu,
                 });
             }
-        }
+        },
     },
     keybind: {
         type: OptionType.SELECT,
@@ -67,28 +71,28 @@ const settings = definePluginSettings({
             { label: "Shift+F9", value: "shift+f9", default: false },
             { label: "Shift+F10", value: "shift+f10", default: false },
             { label: "Shift+F11", value: "shift+f11", default: false },
-            { label: "Shift+F12", value: "shift+f12", default: false }
-        ]
+            { label: "Shift+F12", value: "shift+f12", default: false },
+        ],
     },
     muteUponFakeDeafen: {
         type: OptionType.BOOLEAN,
         description: "",
-        default: false
+        default: false,
     },
     mute: {
         type: OptionType.BOOLEAN,
         description: "",
-        default: true
+        default: true,
     },
     deafen: {
         type: OptionType.BOOLEAN,
         description: "",
-        default: true
+        default: true,
     },
     cam: {
         type: OptionType.BOOLEAN,
         description: "",
-        default: false
+        default: false,
     },
     useCustomKeybind: {
         type: OptionType.BOOLEAN,
@@ -96,7 +100,7 @@ const settings = definePluginSettings({
         default: false,
         onChange: () => {
             setupKeybindListener();
-        }
+        },
     },
     customKeybind: {
         type: OptionType.STRING,
@@ -105,8 +109,8 @@ const settings = definePluginSettings({
         disabled: () => !settings.store.useCustomKeybind,
         onChange: () => {
             setupKeybindListener();
-        }
-    }
+        },
+    },
 });
 
 function onFakeDeafenPanelContextMenu(e: MouseEvent<HTMLButtonElement>) {
@@ -116,12 +120,18 @@ function onFakeDeafenPanelContextMenu(e: MouseEvent<HTMLButtonElement>) {
 }
 
 function FakeDeafenQuickMenu() {
-    const { cam, mute, deafen: deafenFake } = settings.use(["cam", "mute", "deafen"]);
+    const {
+        cam,
+        mute,
+        deafen: deafenFake,
+    } = settings.use(["cam", "mute", "deafen"]);
 
     return (
         <Menu.Menu
             navId="vc-fakedeafen-quick"
-            onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
+            onClose={() =>
+                FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })
+            }
             aria-label="Fake Deafen quick settings"
         >
             <Menu.MenuCheckboxItem
@@ -162,14 +172,14 @@ function toggleFakeDeafen() {
     fakeD = !fakeD;
     console.log("[FakeDeafen] Toggle state:", fakeD ? "ON" : "OFF");
 
-
-    const deafenBtn = document.querySelector('[aria-label="Deafen"]') as HTMLElement;
+    const deafenBtn = document.querySelector(
+        '[aria-label="Deafen"]',
+    ) as HTMLElement;
     if (deafenBtn) {
         deafenBtn.click();
 
         setTimeout(() => deafenBtn.click(), 250);
     }
-
 
     if (fakeD && settings.store.muteUponFakeDeafen) {
         setTimeout(mute, 300);
@@ -178,13 +188,18 @@ function toggleFakeDeafen() {
 
 let keydownListener: ((e: KeyboardEvent) => void) | null = null;
 
-function parseKeybind(keybind: string): { ctrl: boolean; shift: boolean; alt: boolean; key: string } {
+function parseKeybind(keybind: string): {
+    ctrl: boolean;
+    shift: boolean;
+    alt: boolean;
+    key: string;
+} {
     const parts = keybind.toLowerCase().split("+");
     return {
         ctrl: parts.includes("ctrl") || parts.includes("control"),
         shift: parts.includes("shift"),
         alt: parts.includes("alt"),
-        key: parts[parts.length - 1]
+        key: parts[parts.length - 1],
     };
 }
 
@@ -194,10 +209,10 @@ function setupKeybindListener() {
     }
 
     keydownListener = (e: KeyboardEvent) => {
-
-        const keybindValue = settings.store.useCustomKeybind && settings.store.customKeybind
-            ? settings.store.customKeybind
-            : settings.store.keybind || "f9";
+        const keybindValue =
+            settings.store.useCustomKeybind && settings.store.customKeybind
+                ? settings.store.customKeybind
+                : settings.store.keybind || "f9";
 
         const keybind = parseKeybind(keybindValue);
 
@@ -219,42 +234,43 @@ export default definePlugin({
     name: "FakeDeafen",
     description: "You're deafened but you're not.",
     dependencies: ["PhilsPluginLibrary"],
-    authors: [Devs.desu, Devs.viciouscal],
+    authors: [Devs.Sans],
 
     patches: [
         {
             find: "}voiceStateUpdate(",
             replacement: {
                 match: /self_mute:([^,]+),self_deaf:([^,]+),self_video:([^,]+)/,
-                replace: "self_mute:$self.toggle($1, 'mute'),self_deaf:$self.toggle($2, 'deaf'),self_video:$self.toggle($3, 'video')"
-            }
-        }
+                replace:
+                    "self_mute:$self.toggle($1, 'mute'),self_deaf:$self.toggle($2, 'deaf'),self_video:$self.toggle($3, 'video')",
+            },
+        },
     ],
 
     settings,
     toggle: (au: any, what: string) => {
-        if (fakeD === false)
-            return au;
+        if (fakeD === false) return au;
         else
             switch (what) {
-                case "mute": return settings.store.mute;
-                case "deaf": return settings.store.deafen;
-                case "video": return settings.store.cam;
+                case "mute":
+                    return settings.store.mute;
+                case "deaf":
+                    return settings.store.deafen;
+                case "video":
+                    return settings.store.cam;
             }
     },
 
     start() {
-
         if (!settings.store.hideIcon) {
             addSettingsPanelButton({
                 name: "faked",
                 icon: DeafenIcon,
                 tooltipText: "Fake Deafen",
                 onClick: toggleFakeDeafen,
-                onContextMenu: onFakeDeafenPanelContextMenu
+                onContextMenu: onFakeDeafenPanelContextMenu,
             });
         }
-
 
         setupKeybindListener();
     },
@@ -262,10 +278,9 @@ export default definePlugin({
     stop() {
         removeSettingsPanelButton("faked");
 
-
         if (keydownListener) {
             document.removeEventListener("keydown", keydownListener);
             keydownListener = null;
         }
-    }
+    },
 });
