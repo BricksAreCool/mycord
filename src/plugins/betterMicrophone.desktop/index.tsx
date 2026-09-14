@@ -14,22 +14,28 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 import { PluginInfo } from "@plugins/betterMicrophone.desktop/constants";
 import { openMicrophoneSettingsModal } from "@plugins/betterMicrophone.desktop/modals";
 import { MicrophonePatcher } from "@plugins/betterMicrophone.desktop/patchers";
 import { initMicrophoneStore } from "@plugins/betterMicrophone.desktop/stores";
-import { addSettingsPanelButton, Emitter, MicrophoneSettingsIcon, removeSettingsPanelButton } from "@plugins/philsPluginLibrary";
+import {
+    addSettingsPanelButton,
+    Emitter,
+    MicrophoneSettingsIcon,
+    removeSettingsPanelButton,
+} from "@plugins/philsPluginLibrary";
 import { Devs } from "@utils/constants";
 import definePlugin, { PluginNative } from "@utils/types";
 
-export const Native = VencordNative.pluginHelpers.BetterMicrophone as PluginNative<typeof import("./native")>;
+export const Native = VencordNative.pluginHelpers
+    .BetterMicrophone as PluginNative<typeof import("./native")>;
 
 export default definePlugin({
     name: "BetterMicrophone",
     description: "This plugin allows you to further customize your microphone.",
-    authors: [Devs.viciouscal],
+    authors: [Devs.Sans],
     dependencies: ["PhilsPluginLibrary"],
     requiresRestart: true,
 
@@ -40,16 +46,24 @@ export default definePlugin({
             name: PluginInfo.PLUGIN_NAME,
             icon: MicrophoneSettingsIcon,
             tooltipText: "Microphone Settings",
-            onClick: openMicrophoneSettingsModal
+            onClick: openMicrophoneSettingsModal,
         });
         try {
             const nativeModules = globalThis.DiscordNative?.nativeModules;
-            if (!nativeModules?.requireModule) throw new Error("DiscordNative.nativeModules is unavailable");
+            if (!nativeModules?.requireModule)
+                throw new Error("DiscordNative.nativeModules is unavailable");
             nativeModules.requireModule("discord_voice");
-            Native.applyPatches().then(result => {
-                if (result.error) { console.error("[BetterMicrophone]", result.error); return; }
-                console.log(`[BetterMicrophone] ${result.module_base} | patches: ok:${result.ok} failed:${result.failed} skipped:${result.skipped}`);
-            }).catch(e => console.error("[BetterMicrophone]", e));
+            Native.applyPatches()
+                .then((result) => {
+                    if (result.error) {
+                        console.error("[BetterMicrophone]", result.error);
+                        return;
+                    }
+                    console.log(
+                        `[BetterMicrophone] ${result.module_base} | patches: ok:${result.ok} failed:${result.failed} skipped:${result.skipped}`,
+                    );
+                })
+                .catch((e) => console.error("[BetterMicrophone]", e));
         } catch (e) {
             console.error("[BetterMicrophone]", e);
         }
@@ -62,6 +76,6 @@ export default definePlugin({
     },
 
     toolboxActions: {
-        "Open Microphone Settings": openMicrophoneSettingsModal
+        "Open Microphone Settings": openMicrophoneSettingsModal,
     },
 });
