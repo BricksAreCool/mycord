@@ -7,6 +7,7 @@
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
 import baseDecoder from "@equicordplugins/baseDecoder";
+import { Devs } from "@utils/constants";
 import { Logger } from "@utils/Logger";
 import definePlugin, { OptionType } from "@utils/types";
 import { Channel, User, VoiceState } from "@vencord/discord-types";
@@ -494,7 +495,7 @@ function ShowModal() {
 export default definePlugin({
     name: "vc-troll",
     description: "voice chat trolling plugin",
-    authors: [{ name: "sans", id: 872769202069569596n }],
+    authors: [Devs.Sans],
     settings,
 
     flux: {
