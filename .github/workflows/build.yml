@@ -68,4 +68,5 @@ jobs:
             - name: Upload Equicord Stable
               if: ${{ vars.ACT == 'false' }}
               run: |
+                  gh release create latest --latest=false
                   gh release upload latest --clobber dist/release/*
