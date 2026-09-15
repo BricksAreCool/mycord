@@ -67,6 +67,8 @@ jobs:
                   rm release/package.json
                   rm release/*.map
 
+                  echo "test ${{ vars.ACT }}"
+
             - name: Upload Equicord Stable
               if: ${{ vars.ACT == 'false' }}
               run: |
