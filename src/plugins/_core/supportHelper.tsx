@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 import { sendBotMessage } from "@api/Commands";
 import { isPluginEnabled } from "@api/PluginManager";
@@ -30,11 +30,31 @@ import { openSettingsTabModal, UpdaterTab } from "@components/settings";
 import { platformName } from "@equicordplugins/equicordHelper/utils";
 import customIdle from "@plugins/customIdle";
 import { gitHash, gitHashShort } from "@shared/vencordUserAgent";
-import { CONTRIB_ROLE_ID, Devs, DONOR_ROLE_ID, EQUICORD_TEAM, GUILD_ID, SUPPORT_CHANNEL_ID, SUPPORT_CHANNEL_IDS, VC_CONTRIB_ROLE_ID, VC_DONOR_ROLE_ID, VC_GUILD_ID, VC_REGULAR_ROLE_ID, VENCORD_CONTRIB_ROLE_ID } from "@utils/constants";
+import {
+    CONTRIB_ROLE_ID,
+    Devs,
+    DONOR_ROLE_ID,
+    EQUICORD_TEAM,
+    GUILD_ID,
+    SUPPORT_CHANNEL_ID,
+    SUPPORT_CHANNEL_IDS,
+    VC_CONTRIB_ROLE_ID,
+    VC_DONOR_ROLE_ID,
+    VC_GUILD_ID,
+    VC_REGULAR_ROLE_ID,
+    VENCORD_CONTRIB_ROLE_ID,
+} from "@utils/constants";
 import { sendMessage } from "@utils/discord";
 import { Logger } from "@utils/Logger";
 import { Margins } from "@utils/margins";
-import { isAnyPluginDev, isEquicordGuild, isEquicordSupport, isKnownIssuesCategory, isSupportChannel, tryOrElse } from "@utils/misc";
+import {
+    isAnyPluginDev,
+    isEquicordGuild,
+    isEquicordSupport,
+    isKnownIssuesCategory,
+    isSupportChannel,
+    tryOrElse,
+} from "@utils/misc";
 import { relaunch } from "@utils/native";
 import { onlyOnce } from "@utils/onlyOnce";
 import { makeCodeblock } from "@utils/text";
@@ -42,7 +62,26 @@ import definePlugin from "@utils/types";
 import { checkForUpdates, isOutdated, update } from "@utils/updater";
 import { RenderModalProps } from "@vencord/discord-types";
 import { CloudUploadPlatform } from "@vencord/discord-types/enums";
-import { Alerts, ChannelStore, CloudUploader, ConfirmModal, Constants, GuildMemberStore, openModal, Parser, PermissionsBits, PermissionStore, RelationshipStore, RestAPI, SelectedChannelStore, showToast, SnowflakeUtils, Text, Toasts, UserStore } from "@webpack/common";
+import {
+    Alerts,
+    ChannelStore,
+    CloudUploader,
+    ConfirmModal,
+    Constants,
+    GuildMemberStore,
+    openModal,
+    Parser,
+    PermissionsBits,
+    PermissionStore,
+    RelationshipStore,
+    RestAPI,
+    SelectedChannelStore,
+    showToast,
+    SnowflakeUtils,
+    Text,
+    Toasts,
+    UserStore,
+} from "@webpack/common";
 import { JSX } from "react";
 
 import plugins, { PluginMeta } from "~plugins";
@@ -61,10 +100,16 @@ const TrustedRolesIds = [
     VENCORD_CONTRIB_ROLE_ID, // Vencord Contributor
 ];
 
-const AsyncFunction = async function () { }.constructor;
+const AsyncFunction = async function () {}.constructor;
 
-const ShowCurrentGame = getUserSettingLazy<boolean>("status", "showCurrentGame")!;
-const ShowEmbeds = getUserSettingLazy<boolean>("textAndImages", "renderEmbeds")!;
+const ShowCurrentGame = getUserSettingLazy<boolean>(
+    "status",
+    "showCurrentGame",
+)!;
+const ShowEmbeds = getUserSettingLazy<boolean>(
+    "textAndImages",
+    "renderEmbeds",
+)!;
 
 interface clientData {
     name: string;
@@ -93,40 +138,54 @@ export function detectClient(): clientData {
             version: DiscordNative.app.getVersion(),
         };
     }
-    if (IS_VESKTOP) return {
-        name: "Vesktop",
-        version: VesktopNative.app.getVersion(),
-    };
+    if (IS_VESKTOP)
+        return {
+            name: "Vesktop",
+            version: VesktopNative.app.getVersion(),
+        };
 
     if (IS_EQUIBOP) {
-        const equibopGitHash = tryOrElse(() => VesktopNative.app.getGitHash?.(), null);
-        const spoofInfo = tryOrElse(() => VesktopNative.app.getPlatformSpoofInfo?.(), null);
-        const isDevBuild = tryOrElse(() => VesktopNative.app.isDevBuild?.(), false);
+        const equibopGitHash = tryOrElse(
+            () => VesktopNative.app.getGitHash?.(),
+            null,
+        );
+        const spoofInfo = tryOrElse(
+            () => VesktopNative.app.getPlatformSpoofInfo?.(),
+            null,
+        );
+        const isDevBuild = tryOrElse(
+            () => VesktopNative.app.isDevBuild?.(),
+            false,
+        );
         const shortHash = equibopGitHash?.slice(0, 7);
         return {
             name: "Equibop",
             version: VesktopNative.app.getVersion(),
-            spoofed: spoofInfo?.spoofed ? `${platformName()} (spoofed from ${spoofInfo.originalPlatform})` : null,
+            spoofed: spoofInfo?.spoofed
+                ? `${platformName()} (spoofed from ${spoofInfo.originalPlatform})`
+                : null,
             dev: isDevBuild,
             shortHash: shortHash,
             hash: equibopGitHash,
         };
     }
 
-    if ("legcord" in window) return {
-        name: "LegCord",
-        version: window.legcord.version,
-    };
+    if ("legcord" in window)
+        return {
+            name: "LegCord",
+            version: window.legcord.version,
+        };
 
-    if ("goofcord" in window) return {
-        name: "GoofCord",
-        version: window.goofcord.version,
-    };
+    if ("goofcord" in window)
+        return {
+            name: "GoofCord",
+            version: window.goofcord.version,
+        };
 
     const name = typeof unsafeWindow !== "undefined" ? "UserScript" : "Web";
     return {
         name: name,
-        info: navigator.userAgent
+        info: navigator.userAgent,
     };
 }
 
@@ -139,57 +198,100 @@ async function generateDebugInfoMessage() {
     clientString += `${clientInfo.info ? ` • ${clientInfo.info}` : ""}`;
     clientString += `${clientInfo.shortHash ? ` • [${clientInfo.shortHash}](<https://github.com/Equicord/Equibop/commit/${clientInfo.hash}>)` : ""}`;
 
-    const spoofInfo = IS_EQUIBOP ? tryOrElse(() => VesktopNative.app.getPlatformSpoofInfo?.(), null) : null;
+    const spoofInfo = IS_EQUIBOP
+        ? tryOrElse(() => VesktopNative.app.getPlatformSpoofInfo?.(), null)
+        : null;
     const platformDisplay = spoofInfo?.spoofed
         ? `${platformName()} (spoofed from ${spoofInfo.originalPlatform})`
         : platformName();
 
     const info = {
         Equicord:
-            `v${VERSION} • [${gitHashShort}](<https://github.com/Equicord/Equicord/commit/${gitHash}>)` +
+            `v${VERSION} • [${gitHashShort}](<https://github.com/BricksAreCool/mycord/commit/${gitHash}>)` +
             `${IS_EQUIBOP ? "" : SettingsPlugin.getVersionInfo()} - ${Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(BUILD_TIMESTAMP)}`,
         Client: `${RELEASE_CHANNEL} ~ ${clientString}`,
-        Platform: platformDisplay
+        Platform: platformDisplay,
     };
 
     if (IS_DISCORD_DESKTOP) {
-        info["Last Crash Reason"] = (await tryOrElse(() => DiscordNative.processUtils.getLastCrash(), undefined))?.rendererCrashReason ?? "N/A";
+        info["Last Crash Reason"] =
+            (
+                await tryOrElse(
+                    () => DiscordNative.processUtils.getLastCrash(),
+                    undefined,
+                )
+            )?.rendererCrashReason ?? "N/A";
     }
 
-    const potentiallyProblematicPlugins = ([
-        "NoRPC", "NoProfileThemes", "NoMosaic", "NoRoleHeaders", "NoSystemBadge",
-        "AlwaysAnimate", "ClientTheme", "SoundTroll", "Ingtoninator", "NeverPausePreviews",
-        "IdleAutoRestart",
-    ].filter(isPluginEnabled) ?? []).sort();
+    const potentiallyProblematicPlugins = (
+        [
+            "NoRPC",
+            "NoProfileThemes",
+            "NoMosaic",
+            "NoRoleHeaders",
+            "NoSystemBadge",
+            "AlwaysAnimate",
+            "ClientTheme",
+            "SoundTroll",
+            "Ingtoninator",
+            "NeverPausePreviews",
+            "IdleAutoRestart",
+        ].filter(isPluginEnabled) ?? []
+    ).sort();
 
-    if (isPluginEnabled(customIdle.name) && customIdle.settings.store.idleTimeout === 0) {
+    if (
+        isPluginEnabled(customIdle.name) &&
+        customIdle.settings.store.idleTimeout === 0
+    ) {
         potentiallyProblematicPlugins.push(customIdle.name);
     }
 
-    const potentiallyProblematicPluginsNote = "-# Note: These plugins might not be the cause of your problem. They are simply plugins that cause common issues.";
+    const potentiallyProblematicPluginsNote =
+        "-# Note: These plugins might not be the cause of your problem. They are simply plugins that cause common issues.";
 
     const commonIssues = {
-        "Activity Sharing Disabled": tryOrElse(() => !ShowCurrentGame.getSetting(), false),
-        "Link Embeds Disabled": tryOrElse(() => !ShowEmbeds.getSetting(), false),
+        "Activity Sharing Disabled": tryOrElse(
+            () => !ShowCurrentGame.getSetting(),
+            false,
+        ),
+        "Link Embeds Disabled": tryOrElse(
+            () => !ShowEmbeds.getSetting(),
+            false,
+        ),
         "Equicord DevBuild": !IS_STANDALONE,
-        "Equibop DevBuild": IS_EQUIBOP && tryOrElse(() => VesktopNative.app.isDevBuild?.(), false),
+        "Equibop DevBuild":
+            IS_EQUIBOP &&
+            tryOrElse(() => VesktopNative.app.isDevBuild?.(), false),
         "Platform Spoofed": spoofInfo?.spoofed ?? false,
-        "Has UserPlugins": Object.values(PluginMeta).some(m => m.userPlugin),
+        "Has UserPlugins": Object.values(PluginMeta).some((m) => m.userPlugin),
         ">2 Weeks Outdated": BUILD_TIMESTAMP < Date.now() - 12096e5,
-        [`Potentially Problematic Plugins: ${potentiallyProblematicPlugins.join(", ")}\n${potentiallyProblematicPluginsNote}`]: potentiallyProblematicPlugins.length
+        [`Potentially Problematic Plugins: ${potentiallyProblematicPlugins.join(", ")}\n${potentiallyProblematicPluginsNote}`]:
+            potentiallyProblematicPlugins.length,
     };
 
-    let content = `>>> ${Object.entries(info).map(([k, v]) => `**${k}**: ${v}`).join("\n")}`;
-    content += "\n" + Object.entries(commonIssues)
-        .filter(([, v]) => v).map(([k]) => `⚠️ ${k}`)
-        .join("\n");
+    let content = `>>> ${Object.entries(info)
+        .map(([k, v]) => `**${k}**: ${v}`)
+        .join("\n")}`;
+    content +=
+        "\n" +
+        Object.entries(commonIssues)
+            .filter(([, v]) => v)
+            .map(([k]) => `⚠️ ${k}`)
+            .join("\n");
 
     return content.trim();
 }
 
-async function uploadPluginListFile(channelId: string, fileContent: string, filename: string) {
+async function uploadPluginListFile(
+    channelId: string,
+    fileContent: string,
+    filename: string,
+) {
     const file = new File([fileContent], filename, { type: "text/plain" });
-    const upload = new CloudUploader({ file, platform: CloudUploadPlatform.WEB }, channelId);
+    const upload = new CloudUploader(
+        { file, platform: CloudUploadPlatform.WEB },
+        channelId,
+    );
 
     return new Promise<void>((resolve, reject) => {
         upload.on("complete", () => {
@@ -198,17 +300,21 @@ async function uploadPluginListFile(channelId: string, fileContent: string, file
                 body: {
                     flags: 0,
                     channel_id: channelId,
-                    content: `⚠️ Plugin list attached as file due to high plugin count (${fileContent.split("\n").filter(l => l.startsWith("  -")).length} plugins enabled)`,
+                    content: `⚠️ Plugin list attached as file due to high plugin count (${fileContent.split("\n").filter((l) => l.startsWith("  -")).length} plugins enabled)`,
                     nonce: SnowflakeUtils.fromTimestamp(Date.now()),
                     sticker_ids: [],
                     type: 0,
-                    attachments: [{
-                        id: "0",
-                        filename: upload.filename,
-                        uploaded_filename: upload.uploadedFilename,
-                    }],
-                }
-            }).then(() => resolve()).catch(reject);
+                    attachments: [
+                        {
+                            id: "0",
+                            filename: upload.filename,
+                            uploaded_filename: upload.uploadedFilename,
+                        },
+                    ],
+                },
+            })
+                .then(() => resolve())
+                .catch(reject);
         });
 
         upload.on("error", () => reject(new Error("Failed to upload file")));
@@ -218,55 +324,80 @@ async function uploadPluginListFile(channelId: string, fileContent: string, file
 }
 
 function generatePluginList() {
-    const isApiPlugin = (plugin: string) => plugin.endsWith("API") || plugins[plugin].required;
+    const isApiPlugin = (plugin: string) =>
+        plugin.endsWith("API") || plugins[plugin].required;
 
-    const enabledPlugins = Object.keys(plugins)
-        .filter(p => isPluginEnabled(p) && !isApiPlugin(p));
+    const enabledPlugins = Object.keys(plugins).filter(
+        (p) => isPluginEnabled(p) && !isApiPlugin(p),
+    );
 
-    const enabledStockPlugins = enabledPlugins.filter(p => !PluginMeta[p].userPlugin).sort();
-    const enabledUserPlugins = enabledPlugins.filter(p => PluginMeta[p].userPlugin).sort();
+    const enabledStockPlugins = enabledPlugins
+        .filter((p) => !PluginMeta[p].userPlugin)
+        .sort();
+    const enabledUserPlugins = enabledPlugins
+        .filter((p) => PluginMeta[p].userPlugin)
+        .sort();
 
     const user = UserStore.getCurrentUser();
 
     if (enabledPlugins.length > 100 && !isAnyPluginDev(user.id)) {
         Alerts.show({
             title: "Warning: High Plugin Count",
-            body: <div>
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
-                    <img src="https://media.tenor.com/QtGqjwBpRzwAAAAi/wumpus-dancing.gif" />
+            body: (
+                <div>
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            marginBottom: "1rem",
+                        }}
+                    >
+                        <img src="https://media.tenor.com/QtGqjwBpRzwAAAAi/wumpus-dancing.gif" />
+                    </div>
+                    <Paragraph>
+                        You have more than 100 plugins enabled.
+                    </Paragraph>
+                    <Paragraph>
+                        Due to the sheer amount of plugins, you may not receive
+                        support.
+                    </Paragraph>
+                    <Paragraph>
+                        Your issue is likely caused by plugin conflicts.
+                    </Paragraph>
+                    <Paragraph>
+                        Please consider disabling some plugins to troubleshoot.
+                    </Paragraph>
+                    <Paragraph className={Margins.top8}>
+                        Your plugin list will be sent as a text file.
+                    </Paragraph>
                 </div>
-                <Paragraph>You have more than 100 plugins enabled.</Paragraph>
-                <Paragraph>Due to the sheer amount of plugins, you may not receive support.</Paragraph>
-                <Paragraph>Your issue is likely caused by plugin conflicts.</Paragraph>
-                <Paragraph>Please consider disabling some plugins to troubleshoot.</Paragraph>
-                <Paragraph className={Margins.top8}>Your plugin list will be sent as a text file.</Paragraph>
-            </div>
+            ),
         });
 
         const fileContent = [
             `Enabled Stock Plugins (${enabledStockPlugins.length}):`,
-            ...enabledStockPlugins.map(p => `  - ${p}`),
+            ...enabledStockPlugins.map((p) => `  - ${p}`),
             "",
         ];
 
         if (enabledUserPlugins.length) {
             fileContent.push(
                 `Enabled User Plugins (${enabledUserPlugins.length}):`,
-                ...enabledUserPlugins.map(p => `  - ${p}`),
-                ""
+                ...enabledUserPlugins.map((p) => `  - ${p}`),
+                "",
             );
         }
 
         fileContent.push(
             "---",
             `Total Enabled Plugins: ${enabledPlugins.length}`,
-            "Warning: Due to the high number of enabled plugins, support may be limited."
+            "Warning: Due to the high number of enabled plugins, support may be limited.",
         );
 
         return {
             uploadFile: true,
             fileContent: fileContent.join("\n"),
-            filename: `${user.username}-plugins.txt`
+            filename: `${user.username}-plugins.txt`,
         };
     }
 
@@ -296,18 +427,31 @@ function DevBuildConfirmModal(props: RenderModalProps) {
             variant="primary"
             checkboxProps={{
                 checked: s.dismissedDevBuildWarning === true,
-                onChange: checked => s.dismissedDevBuildWarning = checked
+                onChange: (checked) => (s.dismissedDevBuildWarning = checked),
             }}
         >
             <div>
-                <Paragraph>You are using a custom build of Equicord, which we do not provide support for!</Paragraph>
-
-                <Paragraph className={Margins.top8}>
-                    We only provide support for <Link href="https://equicord.org/download">official builds</Link>.
-                    Either <Link href="https://equicord.org/download">switch to an official build</Link> or figure your issue out yourself.
+                <Paragraph>
+                    You are using a custom build of Equicord, which we do not
+                    provide support for!
                 </Paragraph>
 
-                <Text variant="text-md/bold" className={Margins.top8}>You will be banned from receiving support if you ignore this rule.</Text>
+                <Paragraph className={Margins.top8}>
+                    We only provide support for{" "}
+                    <Link href="https://equicord.org/download">
+                        official builds
+                    </Link>
+                    . Either{" "}
+                    <Link href="https://equicord.org/download">
+                        switch to an official build
+                    </Link>{" "}
+                    or figure your issue out yourself.
+                </Paragraph>
+
+                <Text variant="text-md/bold" className={Margins.top8}>
+                    You will be banned from receiving support if you ignore this
+                    rule.
+                </Text>
             </div>
         </ConfirmModal>
     );
@@ -323,45 +467,68 @@ export default definePlugin({
 
     settings,
 
-    patches: [{
-        find: "#{intl::BEGINNING_DM}",
-        replacement: {
-            match: /#{intl::BEGINNING_DM},{.+?}\),(?=.{0,300}(\i)\.isMultiUserDM)/,
-            replace: "$& $self.renderContributorDmWarningCard({ channel: $1 }),"
-        }
-    }],
+    patches: [
+        {
+            find: "#{intl::BEGINNING_DM}",
+            replacement: {
+                match: /#{intl::BEGINNING_DM},{.+?}\),(?=.{0,300}(\i)\.isMultiUserDM)/,
+                replace:
+                    "$& $self.renderContributorDmWarningCard({ channel: $1 }),",
+            },
+        },
+    ],
 
     commands: [
         {
             name: "equicord-debug",
             description: "Send Equicord debug info",
             // @ts-ignore
-            predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
-            execute: async () => ({ content: await generateDebugInfoMessage() })
+            predicate: (ctx) =>
+                isAnyPluginDev(UserStore.getCurrentUser()?.id) ||
+                isEquicordGuild(ctx?.guild?.id, true),
+            execute: async () => ({
+                content: await generateDebugInfoMessage(),
+            }),
         },
         {
             name: "equicord-plugins",
             description: "Send Equicord plugin list",
             // @ts-ignore
-            predicate: ctx => isAnyPluginDev(UserStore.getCurrentUser()?.id) || isEquicordGuild(ctx?.guild?.id, true),
+            predicate: (ctx) =>
+                isAnyPluginDev(UserStore.getCurrentUser()?.id) ||
+                isEquicordGuild(ctx?.guild?.id, true),
             execute: async () => {
                 const channelId = SelectedChannelStore.getChannelId();
                 const pluginList = generatePluginList();
 
                 if (typeof pluginList === "string") {
                     return { content: pluginList };
-                } else if (pluginList && typeof pluginList === "object" && pluginList.uploadFile) {
+                } else if (
+                    pluginList &&
+                    typeof pluginList === "object" &&
+                    pluginList.uploadFile
+                ) {
                     try {
-                        await uploadPluginListFile(channelId, pluginList.fileContent, pluginList.filename);
+                        await uploadPluginListFile(
+                            channelId,
+                            pluginList.fileContent,
+                            pluginList.filename,
+                        );
                         return { content: "" }; // Empty return since file was already sent
                     } catch (e) {
-                        new Logger("SupportHelper").error("Failed to upload plugin list:", e);
-                        return { content: "Failed to upload plugin list file. Please try again." };
+                        new Logger("SupportHelper").error(
+                            "Failed to upload plugin list:",
+                            e,
+                        );
+                        return {
+                            content:
+                                "Failed to upload plugin list file. Please try again.",
+                        };
                     }
                 }
                 return { content: "Unable to generate plugin list." };
-            }
-        }
+            },
+        },
     ],
 
     flux: {
@@ -373,10 +540,10 @@ export default definePlugin({
             if (!selfId || isAnyPluginDev(selfId)) return;
 
             if (!IS_UPDATER_DISABLED) {
-                await checkForUpdatesOnce().catch(() => { });
+                await checkForUpdatesOnce().catch(() => {});
 
                 if (isOutdated) {
-                    openModal(props => (
+                    openModal((props) => (
                         <ConfirmModal
                             {...props}
                             variant="primary"
@@ -387,12 +554,18 @@ export default definePlugin({
                             onCancel={() => openSettingsTabModal(UpdaterTab!)}
                         >
                             <div>
-                                <Paragraph>You are using an outdated version of Equicord! Chances are, your issue is already fixed.</Paragraph>
-                                <Paragraph className={Margins.top8}>
-                                    Please first update before asking for support!
+                                <Paragraph>
+                                    You are using an outdated version of
+                                    Equicord! Chances are, your issue is already
+                                    fixed.
                                 </Paragraph>
                                 <Paragraph className={Margins.top8}>
-                                    If you know what you're doing or cannot update, you can dismiss this prompt.
+                                    Please first update before asking for
+                                    support!
+                                </Paragraph>
+                                <Paragraph className={Margins.top8}>
+                                    If you know what you're doing or cannot
+                                    update, you can dismiss this prompt.
                                 </Paragraph>
                             </div>
                         </ConfirmModal>
@@ -401,11 +574,14 @@ export default definePlugin({
                 }
             }
 
-            const roles = GuildMemberStore.getSelfMember(VC_GUILD_ID)?.roles || GuildMemberStore.getSelfMember(GUILD_ID)?.roles;
-            if (!roles || TrustedRolesIds.some(id => roles.includes(id))) return;
+            const roles =
+                GuildMemberStore.getSelfMember(VC_GUILD_ID)?.roles ||
+                GuildMemberStore.getSelfMember(GUILD_ID)?.roles;
+            if (!roles || TrustedRolesIds.some((id) => roles.includes(id)))
+                return;
 
             if (!IS_WEB && IS_UPDATER_DISABLED) {
-                openModal(props => (
+                openModal((props) => (
                     <ConfirmModal
                         {...props}
                         title="Hold on!"
@@ -413,10 +589,17 @@ export default definePlugin({
                         variant="primary"
                     >
                         <div>
-                            <Paragraph>You are using an externally updated Equicord version, which we do not provide support for!</Paragraph>
+                            <Paragraph>
+                                You are using an externally updated Equicord
+                                version, which we do not provide support for!
+                            </Paragraph>
                             <Paragraph className={Margins.top8}>
-                                Please either switch to an <Link href="https://equicord.org/download">officially supported version of Equicord</Link>, or
-                                contact your package maintainer for support instead.
+                                Please either switch to an{" "}
+                                <Link href="https://equicord.org/download">
+                                    officially supported version of Equicord
+                                </Link>
+                                , or contact your package maintainer for support
+                                instead.
                             </Paragraph>
                         </div>
                     </ConfirmModal>
@@ -425,10 +608,10 @@ export default definePlugin({
             }
 
             if (!IS_STANDALONE && !settings.store.dismissedDevBuildWarning) {
-                openModal(props => <DevBuildConfirmModal {...props} />);
+                openModal((props) => <DevBuildConfirmModal {...props} />);
                 return;
             }
-        }
+        },
     },
 
     renderMessageAccessory(props) {
@@ -437,9 +620,10 @@ export default definePlugin({
         const equicordSupport = isEquicordSupport(props.message.author.id);
 
         const shouldAddUpdateButton =
-            !IS_UPDATER_DISABLED
-            && ((isSupportChannel(props.channel.id) && equicordSupport))
-            && props.message.content?.toLowerCase().includes("update");
+            !IS_UPDATER_DISABLED &&
+            isSupportChannel(props.channel.id) &&
+            equicordSupport &&
+            props.message.content?.toLowerCase().includes("update");
 
         if (shouldAddUpdateButton) {
             buttons.push(
@@ -449,27 +633,50 @@ export default definePlugin({
                     onClick={async () => {
                         try {
                             if (await forceUpdate())
-                                showToast("Success! Restarting...", Toasts.Type.SUCCESS);
+                                showToast(
+                                    "Success! Restarting...",
+                                    Toasts.Type.SUCCESS,
+                                );
                             else
-                                showToast("Already up to date!", Toasts.Type.MESSAGE);
+                                showToast(
+                                    "Already up to date!",
+                                    Toasts.Type.MESSAGE,
+                                );
                         } catch (e) {
-                            new Logger(this.name).error("Error while updating:", e);
-                            showToast("Failed to update :(", Toasts.Type.FAILURE);
+                            new Logger(this.name).error(
+                                "Error while updating:",
+                                e,
+                            );
+                            showToast(
+                                "Failed to update :(",
+                                Toasts.Type.FAILURE,
+                            );
                         }
                     }}
                 >
                     Update Now
-                </Button>
+                </Button>,
             );
         }
 
-        if (equicordSupport && isSupportChannel(props.channel.id) && PermissionStore.can(PermissionsBits.SEND_MESSAGES, props.channel)) {
-            if (props.message.content.includes("/equicord-debug") || props.message.content.includes("/equicord-plugins")) {
+        if (
+            equicordSupport &&
+            isSupportChannel(props.channel.id) &&
+            PermissionStore.can(PermissionsBits.SEND_MESSAGES, props.channel)
+        ) {
+            if (
+                props.message.content.includes("/equicord-debug") ||
+                props.message.content.includes("/equicord-plugins")
+            ) {
                 buttons.push(
                     <Button
                         key="vc-dbg"
                         variant="secondary"
-                        onClick={async () => sendMessage(props.channel.id, { content: await generateDebugInfoMessage() })}
+                        onClick={async () =>
+                            sendMessage(props.channel.id, {
+                                content: await generateDebugInfoMessage(),
+                            })
+                        }
                     >
                         Run /equicord-debug
                     </Button>,
@@ -479,26 +686,53 @@ export default definePlugin({
                         onClick={async () => {
                             const pluginList = generatePluginList();
                             if (typeof pluginList === "string") {
-                                sendMessage(props.channel.id, { content: pluginList });
-                            } else if (pluginList && typeof pluginList === "object" && pluginList.uploadFile) {
+                                sendMessage(props.channel.id, {
+                                    content: pluginList,
+                                });
+                            } else if (
+                                pluginList &&
+                                typeof pluginList === "object" &&
+                                pluginList.uploadFile
+                            ) {
                                 try {
-                                    await uploadPluginListFile(props.channel.id, pluginList.fileContent, pluginList.filename);
-                                    showToast("Plugin list uploaded successfully!", Toasts.Type.SUCCESS);
+                                    await uploadPluginListFile(
+                                        props.channel.id,
+                                        pluginList.fileContent,
+                                        pluginList.filename,
+                                    );
+                                    showToast(
+                                        "Plugin list uploaded successfully!",
+                                        Toasts.Type.SUCCESS,
+                                    );
                                 } catch (e) {
-                                    new Logger("SupportHelper").error("Failed to upload plugin list:", e);
-                                    showToast("Failed to upload plugin list", Toasts.Type.FAILURE);
+                                    new Logger("SupportHelper").error(
+                                        "Failed to upload plugin list:",
+                                        e,
+                                    );
+                                    showToast(
+                                        "Failed to upload plugin list",
+                                        Toasts.Type.FAILURE,
+                                    );
                                 }
                             }
                         }}
                     >
                         Run /equicord-plugins
-                    </Button>
+                    </Button>,
                 );
             }
         }
 
-        if (equicordSupport || (isSupportChannel(props.channel.id) || isKnownIssuesCategory(props.channel.parent_id))) {
-            const match = CodeBlockRe.exec(props.message.content || props.message.embeds[0]?.rawDescription || "");
+        if (
+            equicordSupport ||
+            isSupportChannel(props.channel.id) ||
+            isKnownIssuesCategory(props.channel.parent_id)
+        ) {
+            const match = CodeBlockRe.exec(
+                props.message.content ||
+                    props.message.embeds[0]?.rawDescription ||
+                    "",
+            );
             if (match) {
                 buttons.push(
                     <Button
@@ -508,41 +742,60 @@ export default definePlugin({
                                 const result = await AsyncFunction(match[1])();
                                 const stringed = String(result);
                                 if (stringed) {
-                                    await sendBotMessage(SelectedChannelStore.getChannelId(), {
-                                        content: stringed
-                                    });
+                                    await sendBotMessage(
+                                        SelectedChannelStore.getChannelId(),
+                                        {
+                                            content: stringed,
+                                        },
+                                    );
                                 }
 
                                 showToast("Success!", Toasts.Type.SUCCESS);
                             } catch (e) {
-                                new Logger(this.name).error("Error while running snippet:", e);
-                                showToast("Failed to run snippet :(", Toasts.Type.FAILURE);
+                                new Logger(this.name).error(
+                                    "Error while running snippet:",
+                                    e,
+                                );
+                                showToast(
+                                    "Failed to run snippet :(",
+                                    Toasts.Type.FAILURE,
+                                );
                             }
                         }}
                     >
                         Run Snippet
-                    </Button>
+                    </Button>,
                 );
             }
         }
 
-        return buttons.length
-            ? <Flex>{buttons}</Flex>
-            : null;
+        return buttons.length ? <Flex>{buttons}</Flex> : null;
     },
 
-    renderContributorDmWarningCard: ErrorBoundary.wrap(({ channel }) => {
-        const userId = channel.getRecipientId();
-        if (!isAnyPluginDev(userId)) return null;
-        if (RelationshipStore.isFriend(userId) || isAnyPluginDev(UserStore.getCurrentUser()?.id)) return null;
+    renderContributorDmWarningCard: ErrorBoundary.wrap(
+        ({ channel }) => {
+            const userId = channel.getRecipientId();
+            if (!isAnyPluginDev(userId)) return null;
+            if (
+                RelationshipStore.isFriend(userId) ||
+                isAnyPluginDev(UserStore.getCurrentUser()?.id)
+            )
+                return null;
 
-        return (
-            <Card variant="warning" className={Margins.top8} defaultPadding>
-                Please do not private message Equicord & Vencord plugin developers for support!
-                <br />
-                Instead, use the support channel: {Parser.parse("https://discord.com/channels/1173279886065029291/1297590739911573585")}
-                {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) && " (Click the link to join)"}
-            </Card>
-        );
-    }, { noop: true }),
+            return (
+                <Card variant="warning" className={Margins.top8} defaultPadding>
+                    Please do not private message Equicord & Vencord plugin
+                    developers for support!
+                    <br />
+                    Instead, use the support channel:{" "}
+                    {Parser.parse(
+                        "https://discord.com/channels/1173279886065029291/1297590739911573585",
+                    )}
+                    {!ChannelStore.getChannel(SUPPORT_CHANNEL_ID) &&
+                        " (Click the link to join)"}
+                </Card>
+            );
+        },
+        { noop: true },
+    ),
 });

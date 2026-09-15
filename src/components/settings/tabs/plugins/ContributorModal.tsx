@@ -15,7 +15,15 @@ import { classNameFactory } from "@utils/css";
 import { fetchUserProfile } from "@utils/discord";
 import { pluralize } from "@utils/misc";
 import { RenderModalProps, User } from "@vencord/discord-types";
-import { Modal, openModal, showToast, useEffect, useMemo, UserProfileStore, useStateFromStores } from "@webpack/common";
+import {
+    Modal,
+    openModal,
+    showToast,
+    useEffect,
+    useMemo,
+    UserProfileStore,
+    useStateFromStores,
+} from "@webpack/common";
 
 import Plugins, { PluginMeta } from "~plugins";
 
@@ -25,37 +33,64 @@ import { GithubButton, WebsiteButton } from "./PluginModalButtons";
 const cl = classNameFactory("vc-author-modal-");
 
 export function openContributorModal(user: User) {
-    openModal(modalProps => <ContributorModal user={user} modalProps={modalProps} />);
+    openModal((modalProps) => (
+        <ContributorModal user={user} modalProps={modalProps} />
+    ));
 }
 
-function ContributorModal({ user, modalProps }: { user: User; modalProps: RenderModalProps; }) {
+function ContributorModal({
+    user,
+    modalProps,
+}: {
+    user: User;
+    modalProps: RenderModalProps;
+}) {
     useSettings();
 
-    const profile = useStateFromStores([UserProfileStore], () => UserProfileStore.getUserProfile(user.id));
+    const profile = useStateFromStores([UserProfileStore], () =>
+        UserProfileStore.getUserProfile(user.id),
+    );
 
     useEffect(() => {
-        if (!profile && !user.bot && user.id)
-            fetchUserProfile(user.id);
+        if (!profile && !user.bot && user.id) fetchUserProfile(user.id);
     }, [user.id, user.bot, profile]);
 
-    const githubName = profile?.connectedAccounts?.find(a => a.type === "github")?.name;
-    const website = profile?.connectedAccounts?.find(a => a.type === "domain")?.name;
+    const githubName = profile?.connectedAccounts?.find(
+        (a) => a.type === "github",
+    )?.name;
+    const website = profile?.connectedAccounts?.find(
+        (a) => a.type === "domain",
+    )?.name;
 
     const plugins = useMemo(() => {
         const allPlugins = Object.values(Plugins);
-        const pluginsByAuthor = (VencordDevsById[user.id] || EquicordDevsById[user.id])
-            ? allPlugins.filter(p => p.authors.includes(VencordDevsById[user.id] || EquicordDevsById[user.id]))
-            : allPlugins.filter(p =>
-                PluginMeta[p.name]?.userPlugin && p.authors.some(a => a.id.toString() === user.id)
-                || p.authors.some(a => a.name === user.username)
-            );
+        const pluginsByAuthor =
+            VencordDevsById[user.id] || EquicordDevsById[user.id]
+                ? allPlugins.filter((p) =>
+                      p.authors.includes(
+                          VencordDevsById[user.id] || EquicordDevsById[user.id],
+                      ),
+                  )
+                : allPlugins.filter(
+                      (p) =>
+                          (PluginMeta[p.name]?.userPlugin &&
+                              p.authors.some(
+                                  (a) => a.id.toString() === user.id,
+                              )) ||
+                          p.authors.some((a) => a.name === user.username),
+                  );
 
         return pluginsByAuthor
-            .filter(p => !p.name.endsWith("API"))
-            .sort((a, b) => Number(a.required ?? false) - Number(b.required ?? false));
+            .filter((p) => !p.name.endsWith("API"))
+            .sort(
+                (a, b) =>
+                    Number(a.required ?? false) - Number(b.required ?? false),
+            );
     }, [user.id, user.username]);
 
-    const ContributedHyperLink = <Link href="https://github.com/Equicord/Equicord">contributed</Link>;
+    const ContributedHyperLink = (
+        <Link href="https://github.com/Equicord/Equicord">contributed</Link>
+    );
 
     const hasLinks = website || githubName;
 
@@ -69,21 +104,23 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
                         src={user.getAvatarURL(void 0, 512, true)}
                         alt=""
                     />
-                    <Heading tag="h2" className={cl("name")}>{user.username}</Heading>
+                    <Heading tag="h2" className={cl("name")}>
+                        {user.username}
+                    </Heading>
                 </div>
             }
             subtitle={
-                plugins.length
-                    ? (
-                        <Paragraph>
-                            {user.username} has {ContributedHyperLink} to {pluralize(plugins.length, "plugin")}!
-                        </Paragraph>
-                    )
-                    : (
-                        <Paragraph>
-                            {user.username} has not made any plugins. They likely {ContributedHyperLink} in other ways!
-                        </Paragraph>
-                    )
+                plugins.length ? (
+                    <Paragraph>
+                        {user.username} has {ContributedHyperLink} to{" "}
+                        {pluralize(plugins.length, "plugin")}!
+                    </Paragraph>
+                ) : (
+                    <Paragraph>
+                        {user.username} has not made any plugins. They likely{" "}
+                        {ContributedHyperLink} in other ways!
+                    </Paragraph>
+                )
             }
             actionBarInput={
                 hasLinks && (
@@ -110,14 +147,16 @@ function ContributorModal({ user, modalProps }: { user: User; modalProps: Render
             <div className={cl("root")}>
                 {!!plugins.length && (
                     <div className={cl("plugins")}>
-                        {plugins.map(p =>
+                        {plugins.map((p) => (
                             <PluginCard
                                 key={p.name}
                                 plugin={p}
                                 disabled={p.required ?? false}
-                                onRestartNeeded={() => showToast("Restart to apply changes!")}
+                                onRestartNeeded={() =>
+                                    showToast("Restart to apply changes!")
+                                }
                             />
-                        )}
+                        ))}
                     </div>
                 )}
             </div>
