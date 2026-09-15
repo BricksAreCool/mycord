@@ -6,6 +6,8 @@ on:
 
 env:
     FORCE_COLOR: true
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
 permissions:
     contents: write
 
