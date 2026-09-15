@@ -68,6 +68,6 @@ jobs:
                   rm release/*.map
 
             - name: Upload Equicord Stable
-              if: ${{ env.ACT == 'false' }}
+              if: ${{ vars.ACT == 'false' }}
               run: |
                   gh release upload latest --clobber dist/release/*
